@@ -1,0 +1,26 @@
+id: exposed_source
+name: Exposed Source Code
+
+paths:
+  git:
+    url: "/.git/HEAD"
+    tool: "git-dumper"
+    tool_url: "https://github.com/arthaud/git-dumper"
+  svn:
+    url: "/.svn/entries"
+    tool: "svn-extractor"
+    tool_url: "https://github.com/anantshri/svn-extractor"
+  hg:
+    url: "/.hg/store/00manifest.i"
+    tool: "hg-dumper"
+    tool_url: "https://github.com/arthaud/hg-dumper"
+  bzr:
+    url: "/.bzr/README"
+    tool: "bzr_dumper"
+    tool_url: "https://github.com/shpik-kr/bzr_dumper"
+  darcs:
+    url: "/_darcs/inventory"
+  env:
+    url: "/.env"
+  ds_store:
+    url: "/.DS_Store"

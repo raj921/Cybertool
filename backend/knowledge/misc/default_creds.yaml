@@ -1,0 +1,41 @@
+id: default_creds
+name: Default Credentials
+
+credentials:
+  grafana:
+    - username: admin
+      password: admin
+  jenkins:
+    - username: admin
+      password: admin
+  tomcat:
+    - username: tomcat
+      password: tomcat
+    - username: admin
+      password: admin
+  joomla:
+    - username: admin
+      password: admin
+  wordpress:
+    - username: admin
+      password: admin
+  phpmyadmin:
+    - username: root
+      password: ""
+    - username: root
+      password: root
+  mongodb:
+    - username: ""
+      password: ""
+  redis:
+    - username: ""
+      password: ""
+  elasticsearch:
+    - username: ""
+      password: ""
+
+tools:
+  - name: DefaultCreds-cheat-sheet
+    url: "https://github.com/ihebski/DefaultCreds-cheat-sheet"
+  - name: many-passwords
+    url: "https://github.com/many-passwords/many-passwords"

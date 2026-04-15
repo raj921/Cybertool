@@ -1,0 +1,38 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Secrets & local env
+.env
+.env.local
+backend/.env
+!**/.env.example
+
+# App data
+backend/cyberhunter.db
+*.db
+agent_memory.json
+
+# Go build artifact
+goscanners-bin
+goscanners/goscanners-bin
+
+# Node / Next
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+node_modules/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp

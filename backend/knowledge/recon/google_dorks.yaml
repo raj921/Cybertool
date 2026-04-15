@@ -1,0 +1,21 @@
+id: google_dorks
+name: Google Dork Templates
+
+dorks:
+  secrets:
+    - 'inurl:{TARGET} intitle:"index of" ext:sql|xls|xml|json|csv'
+    - 'inurl:{TARGET} ext:log'
+    - 'inurl:{TARGET} "MYSQL_ROOT_PASSWORD:" ext:env OR ext:yml -git'
+    - 'inurl:{TARGET} allintext:"API_SECRET*" ext:env | ext:yml'
+    - 'site:{TARGET} "-----BEGIN RSA PRIVATE KEY-----"'
+    - 'inurl:{TARGET} intitle:"index of /" "*key.pem"'
+  configs:
+    - 'inurl:{TARGET} intitle:"index of" "config.db"'
+    - 'inurl:{TARGET} intext:admin ext:sql inurl:admin'
+    - 'inurl:{TARGET} allintext:username,password filetype:log'
+  third_party:
+    - 'site:pastebin.com "{TARGET}"'
+    - 'site:trello.com "{TARGET}"'
+    - 'site:github.com "{TARGET}"'
+    - 'site:*.atlassian.net "{TARGET}"'
+    - 'site:npmjs.com "{TARGET}"'

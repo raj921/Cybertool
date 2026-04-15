@@ -1,0 +1,20 @@
+id: redirect_to_ssrf
+name: Open Redirect to SSRF Chain
+impact: critical
+prerequisites:
+  - open_redirect on any parameter
+  - ssrf-vulnerable endpoint that fetches URLs
+chain:
+  - step: 1
+    finding: open_redirect
+    description: "Find an open redirect that accepts arbitrary URLs"
+  - step: 2
+    finding: ssrf
+    description: "Feed the redirect URL into the SSRF-vulnerable endpoint"
+  - step: 3
+    result: "Server follows redirect to internal/cloud metadata"
+    impact: "Access to AWS credentials, internal services, or admin panels"
+example: |
+  1. Open redirect: https://target.com/redirect?url=http://169.254.169.254/
+  2. SSRF endpoint: https://target.com/api/fetch?url=https://target.com/redirect?url=http://169.254.169.254/
+  3. Server follows redirect -> fetches cloud metadata -> leaks AWS keys

