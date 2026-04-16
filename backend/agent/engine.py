@@ -60,7 +60,13 @@ class AgentEngine:
         self.memory.add_message("system", SYSTEM_PROMPT)
         self.memory.add_message("user", initial_user_msg)
 
-        while self._running and self.memory.budget_remaining > 0:
+        max_iterations = 400
+        iterations = 0
+        consecutive_no_tool_turns = 0
+        last_thinking_text: str | None = None
+
+        while self._running and self.memory.budget_remaining > 0 and iterations < max_iterations:
+            iterations += 1
             try:
                 response = await self.client.chat(
                     messages=self.memory.messages,
@@ -70,23 +76,31 @@ class AgentEngine:
                 choice = response.get("choices", [{}])[0]
                 message = choice.get("message", {})
                 finish_reason = choice.get("finish_reason", "")
+                tool_calls = message.get("tool_calls") or []
+                content_text = (message.get("content") or "").strip()
 
-                # Text response from the agent
-                if message.get("content"):
-                    text = message["content"]
-                    self.memory.add_message("assistant", text)
-                    await self._emit({"type": "thinking", "text": text, "scan_id": self.scan_id})
+                if content_text and not tool_calls:
+                    if content_text != last_thinking_text:
+                        self.memory.add_message("assistant", content_text)
+                        await self._emit({"type": "thinking", "text": content_text, "scan_id": self.scan_id})
+                        last_thinking_text = content_text
 
-                    if "[COMPLETE]" in text:
+                        if "[FINDING]" in content_text:
+                            await self._emit({"type": "finding_raw", "text": content_text, "scan_id": self.scan_id})
+
+                    if "[COMPLETE]" in content_text:
                         self._running = False
                         break
 
-                    if "[FINDING]" in text:
-                        await self._emit({"type": "finding_raw", "text": text, "scan_id": self.scan_id})
+                elif content_text and tool_calls:
+                    if content_text != last_thinking_text:
+                        await self._emit({"type": "thinking", "text": content_text, "scan_id": self.scan_id})
+                        last_thinking_text = content_text
+                        if "[FINDING]" in content_text:
+                            await self._emit({"type": "finding_raw", "text": content_text, "scan_id": self.scan_id})
 
-                # Tool calls
-                tool_calls = message.get("tool_calls", [])
                 if tool_calls:
+                    consecutive_no_tool_turns = 0
                     assistant_msg: dict = {"role": "assistant", "content": message.get("content", "")}
                     assistant_msg["tool_calls"] = tool_calls
                     self.memory.messages.append(assistant_msg)
@@ -120,10 +134,29 @@ class AgentEngine:
                             "result_preview": result_str[:500],
                             "scan_id": self.scan_id,
                         })
+                else:
+                    consecutive_no_tool_turns += 1
 
-                if finish_reason == "stop" and not tool_calls:
-                    if not message.get("content"):
+                    if finish_reason == "stop" and not content_text:
                         self._running = False
+                        break
+
+                    if consecutive_no_tool_turns >= 3:
+                        self._running = False
+                        await self._emit({
+                            "type": "status",
+                            "status": "stalled",
+                            "text": "Agent produced thinking but no tool calls; stopping to avoid loop.",
+                            "scan_id": self.scan_id,
+                        })
+                        break
+
+                    self.memory.add_message(
+                        "user",
+                        "You responded with narration but did not call any tool. "
+                        "Either call a concrete tool now to make progress, or emit exactly '[COMPLETE]' "
+                        "on its own line if the hunt is finished."
+                    )
 
             except Exception as exc:
                 error_msg = f"Agent error: {traceback.format_exc()}"
