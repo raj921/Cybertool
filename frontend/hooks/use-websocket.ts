@@ -22,7 +22,15 @@ export function useWebSocket(url: string | null) {
     ws.onmessage = (e) => {
       try {
         const event: AgentEvent = JSON.parse(e.data);
-        setEvents((prev) => [...prev, event]);
+        setEvents((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.type === event.type) {
+            const a = JSON.stringify({ ...last, scan_id: undefined });
+            const b = JSON.stringify({ ...event, scan_id: undefined });
+            if (a === b) return prev;
+          }
+          return [...prev, event];
+        });
       } catch {
         /* ignore malformed */
       }
