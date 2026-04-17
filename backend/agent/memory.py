@@ -31,9 +31,26 @@ class AgentMemory:
     tool_calls_made: int = 0
     max_tool_calls: int = 200
 
+    max_messages: int = 80
+
+    def _trim(self) -> None:
+        """Keep memory bounded: always retain the initial system + first user
+        message, and drop the oldest middle messages when we exceed the cap.
+        Stops runaway token usage on very long autonomous scans.
+        """
+        if len(self.messages) <= self.max_messages:
+            return
+        head = self.messages[:2]
+        tail = self.messages[-(self.max_messages - 2):]
+        # Don't orphan a tool message whose parent assistant tool_calls got dropped.
+        while tail and tail[0].get("role") == "tool":
+            tail = tail[1:]
+        self.messages = head + tail
+
     def add_message(self, role: str, content: str, **kwargs: Any) -> None:
         msg: dict = {"role": role, "content": content, **kwargs}
         self.messages.append(msg)
+        self._trim()
 
     def add_tool_result(self, tool_call_id: str, result: str) -> None:
         self.messages.append({
@@ -42,6 +59,7 @@ class AgentMemory:
             "content": result,
         })
         self.tool_calls_made += 1
+        self._trim()
 
     def add_finding(self, finding: dict) -> None:
         self.raw_findings.append(finding)
