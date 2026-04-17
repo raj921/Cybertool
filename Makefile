@@ -1,4 +1,4 @@
-.PHONY: all backend frontend install test clean
+.PHONY: all backend backend-dev frontend frontend-dev install test clean
 
 REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -9,10 +9,16 @@ install:
 	cd $(REPO_ROOT)/frontend && npm install
 
 backend:
-	cd $(REPO_ROOT) && . .venv/bin/activate && uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+	cd $(REPO_ROOT) && . .venv/bin/activate && uvicorn backend.main:app --host 127.0.0.1 --port 8000
+
+backend-dev:
+	cd $(REPO_ROOT) && . .venv/bin/activate && uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 
 frontend:
-	cd $(REPO_ROOT)/frontend && npm run dev
+	cd $(REPO_ROOT)/frontend && npm run build && npm run start -- --port 3000
+
+frontend-dev:
+	cd $(REPO_ROOT)/frontend && npm run dev -- --port 3000
 
 test-backend:
 	cd $(REPO_ROOT) && . .venv/bin/activate && python -m pytest tests/ -v

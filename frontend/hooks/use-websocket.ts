@@ -5,6 +5,8 @@ import type { AgentEvent } from "@/lib/types";
 
 type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
 
+const MAX_EVENTS_IN_MEMORY = 500;
+
 export function useWebSocket(url: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
   const [state, setState] = useState<ConnectionState>("disconnected");
@@ -29,7 +31,10 @@ export function useWebSocket(url: string | null) {
             const b = JSON.stringify({ ...event, scan_id: undefined });
             if (a === b) return prev;
           }
-          return [...prev, event];
+          const next = prev.length >= MAX_EVENTS_IN_MEMORY
+            ? prev.slice(prev.length - MAX_EVENTS_IN_MEMORY + 1)
+            : prev;
+          return [...next, event];
         });
       } catch {
         /* ignore malformed */
